@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "NanoTransformer"
+  site-url: "https://tripathysagar.github.io/NanoTransformer"
+  description: "a transformer experiments"
+  repo-branch: main
+  repo-url: "https://github.com/tripathysagar/NanoTransformer"
