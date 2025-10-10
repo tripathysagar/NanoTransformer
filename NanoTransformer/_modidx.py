@@ -21,4 +21,7 @@ d = { 'settings': { 'branch': 'main',
                                       'NanoTransformer.data.Tokenizer.i2c': ('data.html#tokenizer.i2c', 'NanoTransformer/data.py'),
                                       'NanoTransformer.data.Tokenizer.setup_vocab': ( 'data.html#tokenizer.setup_vocab',
                                                                                       'NanoTransformer/data.py'),
-                                      'NanoTransformer.data.get_text_dl': ('data.html#get_text_dl', 'NanoTransformer/data.py')}}}
+                                      'NanoTransformer.data.get_text_dl': ('data.html#get_text_dl', 'NanoTransformer/data.py'),
+                                      'NanoTransformer.data.get_vision_classifier_dl': ( 'data.html#get_vision_classifier_dl',
+                                                                                         'NanoTransformer/data.py'),
+                                      'NanoTransformer.data.show_images': ('data.html#show_images', 'NanoTransformer/data.py')}}}
