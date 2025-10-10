@@ -17,9 +17,7 @@ urlsave("https://raw.githubusercontent.com/karpathy/build-nanogpt/refs/heads/mas
 from typing import List
 class Tokenizer:
     """
-    Char level `Tokenizer` class for text data.
     Maps each char to unique index. It have some key attributes i.e.
-
     1. **voacb**: where it maped to all the char present text field
     1. **encode**: to encode given string to list of tokens
     1. **decode**: to decode given tokens to str
@@ -49,13 +47,13 @@ class Tokenizer:
 
     def encode(self, inp:str) -> List[int]:
         """
-        to encode given string to list of tokens
+        returns the encoded string
         """
         return [self.c2i(i) for i in inp]
 
     def decode(self, inp:List[int]) -> str:
         """
-        to decode given tokens to str
+        returns the string represntation of the
         """
         return ''.join([self.i2c(i) for i in inp])
 
@@ -81,7 +79,6 @@ class GPTDataset(Dataset):
 
 # %% ../nbs/00_data.ipynb 11
 def get_text_dl(bs:int=64, seq_len:int=128):
-    """Helper func to get tokenized dataloder."""
     split_idx = int(len(tokenizer.txt) * 0.9)                         #split text with 9:
     train_dataset = GPTDataset(tokenizer.txt[:split_idx], seq_len )
     val_dataset = GPTDataset(tokenizer.txt[split_idx:], seq_len)
