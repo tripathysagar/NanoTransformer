@@ -1,6 +1,6 @@
 _docs/
 _proc/
-static/
+static/*
 
 *.bak
 .gitattributes

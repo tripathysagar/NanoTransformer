@@ -3,3 +3,4 @@ website:
     contents:
       - index.ipynb
       - 00_data.ipynb
+      - 01_GPTText2Text.ipynb
