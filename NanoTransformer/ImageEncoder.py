@@ -28,6 +28,9 @@ class VisionConfig:
     lr = 1e-3
     max_grad_norm = 1.0
 
+    head_op_dim = 512
+    nc = 10
+
 visConfig = VisionConfig()
 
 # %% ../nbs/02_ImageEncoder.ipynb 11
@@ -77,7 +80,7 @@ class VisionEncoder(nn.Module):
             ResBlock(1, 64, ks=7, stride=2),      # 28→14
             ResBlock(64, 128, stride=2),          # 14→7
             ResBlock(128, 256, stride=2),         # 7→4
-            ResBlock(256, 512, stride=2),         # 4→2
+            ResBlock(256, visConfig.head_op_dim, stride=2),         # 4→2
             nn.AdaptiveAvgPool2d(1),
             nn.Flatten()                          # 512
         )
@@ -95,9 +98,9 @@ class VisionEncoder(nn.Module):
 classifier = nn.Sequential(
     VisionEncoder(),
     nn.Sequential(
-            nn.Linear(512, 1024),
+            nn.Linear(visConfig.head_op_dim, 1024),
             nn.BatchNorm1d(1024),
-            nn.Linear(1024, 10)))
+            nn.Linear(1024, visConfig.nc)))
 
 # %% ../nbs/02_ImageEncoder.ipynb 15
 loss_func = nn.CrossEntropyLoss()
