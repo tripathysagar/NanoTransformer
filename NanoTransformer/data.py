@@ -188,18 +188,18 @@ class MNISTDataset(Dataset):
         self.tokenizer = tokenizer
         self.captions = captions
         self.ds = datasets.FashionMNIST(fn_path, train=split == 'train', transform=transforms.ToTensor())
-    
+
     def __len__(self):
         return len(self.ds)
 
     def __getitem__(self, idx):
         im, lbl = self.ds[idx]
-        caption = self.captions[lbl]
-        tokens = torch.tensor(self.tokenizer.encode(caption[rand_lbl()]))
-        
+        caption = self.captions[lbl][rand_lbl()] + '\n'         # Add '\n' here showing eos for the caption data
+        tokens = torch.tensor(self.tokenizer.encode(caption))
+
         # Create input and target sequences
         input_tokens = tokens[:-1]
-        target_tokens = tokens[1:]
+        target_tokens = tokens
 
         return im, input_tokens, target_tokens
 
