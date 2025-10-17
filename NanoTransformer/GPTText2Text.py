@@ -27,6 +27,7 @@ class GPTConfig:
     lr = 1e-3
     max_grad_norm = 1.0
 
+    epochs = 200
 gptConfig = GPTConfig()
 
 # %% ../nbs/01_GPTText2Text.ipynb 14

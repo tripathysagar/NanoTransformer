@@ -101,15 +101,16 @@ classifier = nn.Sequential(
             nn.Linear(visConfig.head_op_dim, 1024),
             nn.BatchNorm1d(1024),
             nn.Linear(1024, visConfig.nc)))
+classifier
 
-# %% ../nbs/02_ImageEncoder.ipynb 15
+# %% ../nbs/02_ImageEncoder.ipynb 16
 loss_func = nn.CrossEntropyLoss()
 
-# %% ../nbs/02_ImageEncoder.ipynb 20
+# %% ../nbs/02_ImageEncoder.ipynb 21
 def log(*args):
     print(f"{args[0]}   \t{args[1]:.4f}   \t{args[2]:.4f}\t\t{args[3]:.4f}")
 
-# %% ../nbs/02_ImageEncoder.ipynb 21
+# %% ../nbs/02_ImageEncoder.ipynb 22
 def vision_encoder_train(model, epochs=10):
     model = model.to(visConfig.device)
     optimizer = AdamW(model.parameters(), lr=visConfig.lr)
@@ -156,6 +157,6 @@ def vision_encoder_train(model, epochs=10):
         accurecy = total_correct / total_samples
         log(epoch+1, train_loss/len(dls['train']), val_loss/len(dls['valid']), accurecy)
 
-# %% ../nbs/02_ImageEncoder.ipynb 24
+# %% ../nbs/02_ImageEncoder.ipynb 25
 def save_model(fn='classfier.pth'):
     torch.save(classifier, path/fn)

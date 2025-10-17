@@ -115,8 +115,8 @@ def show_images(im, label=None, figsize=(3,3)):  # Increase size
 def get_vision_classifier_dl(bs:int=64):
     im_path = path/'FashionMNIST'
 
-    train_ds = datasets.FashionMNIST(im_path, download=True, train=True, transform=transforms.ToTensor())
-    valid_ds = datasets.FashionMNIST(im_path, download=True, transform=transforms.ToTensor())
+    train_ds = datasets.FashionMNIST(im_path, train=True, transform=transforms.ToTensor())
+    valid_ds = datasets.FashionMNIST(im_path, transform=transforms.ToTensor())
 
     return {
         'train': DataLoader(train_ds, batch_size=bs, shuffle=True),
@@ -177,12 +177,12 @@ captions = {
         "ankle high boot", "short ankle boot", "classic boot", "urban boot", "stylish boot"]
 }
 
-# %% ../nbs/00_data.ipynb 30
+# %% ../nbs/00_data.ipynb 31
 import random
 assert set([len(i) for i in captions.values()]) == {len(captions[0])}
 rand_lbl = lambda : random.randint(0, len(captions[0])-1)
 
-# %% ../nbs/00_data.ipynb 33
+# %% ../nbs/00_data.ipynb 34
 class MNISTDataset(Dataset):
     def __init__(self, tokenizer, fn_path:Path, split='train', captions=captions):
         self.tokenizer = tokenizer
@@ -203,7 +203,7 @@ class MNISTDataset(Dataset):
 
         return im, input_tokens, target_tokens
 
-# %% ../nbs/00_data.ipynb 36
+# %% ../nbs/00_data.ipynb 40
 from torch.nn.utils.rnn import pad_sequence
 
 def collate_fn_multimodal(batch):
