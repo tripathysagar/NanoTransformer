@@ -113,10 +113,11 @@ def show_images(im, label=None, figsize=(3,3)):  # Increase size
 
 # %% ../nbs/00_data.ipynb 24
 def get_vision_classifier_dl(bs:int=64):
-    im_path = path/'FashionMNIST'
+    #datasets.FashionMNIST(path, download=True)
+    #im_path = path/'FashionMNIST'
 
-    train_ds = datasets.FashionMNIST(im_path, train=True, transform=transforms.ToTensor())
-    valid_ds = datasets.FashionMNIST(im_path, transform=transforms.ToTensor())
+    train_ds = datasets.FashionMNIST(path, train=True, transform=transforms.ToTensor())
+    valid_ds = datasets.FashionMNIST(path, train=False, transform=transforms.ToTensor())
 
     return {
         'train': DataLoader(train_ds, batch_size=bs, shuffle=True),
@@ -225,8 +226,10 @@ def get_mnist_caption_dl(tokenizer, fn_path, batch_size=64):
     Creates train and validation dataloaders for Fashion MNIST with captions.
     Returns dict with 'train' and 'valid' DataLoaders.
     """
+    datasets.FashionMNIST(fn_path, download=True)
+
     train_ds = MNISTDataset(tokenizer, fn_path, split='train')
-    valid_ds = MNISTDataset(tokenizer, fn_path, split='valid')
+    valid_ds = MNISTDataset(tokenizer, fn_path, split='test')
 
     return {
         'train': DataLoader(train_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn_multimodal),
