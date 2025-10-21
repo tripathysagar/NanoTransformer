@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = ['text_dl', 'vision_dl', 'multiConfig', 'train_iters', 'valid_iters', 'find_lbl', 'Embedding', 'MultiModal',
            'MultiModalConfig', 'TrainBatchIter', 'ValidBatchIter', 'pred', 'cal_loss', 'calculate_text_loss',
-           'calculate_vision_loss', 'total_loss', 'generate_caption', 'generate_text']
+           'calculate_vision_loss', 'total_loss', 'multi_modal_train', 'generate_caption', 'generate_text']
 
 # %% ../nbs/03_MultiModal.ipynb 4
 from .data import *
@@ -244,6 +244,66 @@ def total_loss(model):
   text_loss = (calculate_text_loss(model, text_dl['train']) + calculate_text_loss(model, text_dl['valid'])) / 2
   vision_loss = (calculate_vision_loss(model, vision_dl['train']) + calculate_vision_loss(model, vision_dl['valid'])) / 2
   print(f"Text Loss: {text_loss:.4f} | Vision Loss: {vision_loss:.4f}")
+
+# %% ../nbs/03_MultiModal.ipynb 40
+def multi_modal_train(model, epochs):
+    model = model.to(multiConfig.device)
+    print(f"before training : ")
+    total_loss(model)
+    optimizer = AdamW(model.parameters(), lr=multiConfig.lr)
+
+    print("---"*20)
+    for epoch in range(epochs):
+        model.train()
+        train_loss, no_train = 0, 0
+        train_iters.reset()
+
+        for text_input, text_target, ims in train_iters: # Iterate directly over iters
+            no_train += 1
+            # Handle None for images
+            if ims is not None:
+                ims = ims.to(multiConfig.device)
+
+            text_input, text_target = text_input.to(multiConfig.device), text_target.to(multiConfig.device)
+
+            optimizer.zero_grad()
+
+            with torch.autocast(device_type=multiConfig.device, dtype=multiConfig.dtype):
+              logits = pred(model, text_input, ims) #model(text_input, ims)
+
+              loss = cal_loss(logits, text_target)    #loss_func(logits.reshape(-1, gptConfig.vocab_size), text_target.reshape(-1))
+
+            loss.backward()
+
+            clip_grad_norm_(model.parameters(), gptConfig.max_grad_norm) # to clip gradients
+
+            optimizer.step()
+
+            train_loss += loss.item()
+
+        valid_iters.reset()
+        model.eval()
+        val_loss, no_valid = 0, 0
+        with torch.no_grad(), torch.autocast(device_type=gptConfig.device, dtype=gptConfig.dtype):
+            for text_input, text_target, ims in valid_iters:
+                no_valid += 1
+
+                if ims is not None: ims = ims.to(multiConfig.device)
+
+                text_input, text_target = text_input.to(multiConfig.device), text_target.to(multiConfig.device)
+
+                logits = pred(model, text_input, ims)
+
+                loss = cal_loss(logits, text_target)
+
+                val_loss += loss.item()
+
+        print(f"{epoch} -> {train_loss/no_train:.4f} : {val_loss/no_valid:.4f}")
+    print("---"*20)
+
+    print(f"after training : ")
+    total_loss(model)
+
 
 # %% ../nbs/03_MultiModal.ipynb 44
 @torch.no_grad()
