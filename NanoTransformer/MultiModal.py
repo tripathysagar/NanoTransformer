@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = ['text_dl', 'vision_dl', 'multiConfig', 'train_iters', 'valid_iters', 'find_lbl', 'Embedding', 'MultiModal',
            'MultiModalConfig', 'TrainBatchIter', 'ValidBatchIter', 'pred', 'cal_loss', 'calculate_text_loss',
-           'calculate_vision_loss', 'cal_indivisual_loss', 'multi_modal_train', 'generate_caption', 'generate_text']
+           'calculate_vision_loss', 'total_loss', 'generate_caption', 'generate_text']
 
 # %% ../nbs/03_MultiModal.ipynb 4
 from .data import *
@@ -203,8 +203,8 @@ def cal_loss(logits, text_target):
   """calculate the loss for pred and target"""
   return loss_func(logits.reshape(-1, gptConfig.vocab_size), text_target.reshape(-1))
 
-# %% ../nbs/03_MultiModal.ipynb 35
-def calculate_text_loss(data_dl):
+# %% ../nbs/03_MultiModal.ipynb 34
+def calculate_text_loss(model, data_dl):
     total_loss = 0
     num_batches = 0
 
@@ -220,8 +220,8 @@ def calculate_text_loss(data_dl):
 
     return total_loss / num_batches
 
-# %% ../nbs/03_MultiModal.ipynb 37
-def calculate_vision_loss(data_dl):
+# %% ../nbs/03_MultiModal.ipynb 36
+def calculate_vision_loss(model, data_dl):
     total_loss = 0
     num_batches = 0
 
@@ -239,65 +239,13 @@ def calculate_vision_loss(data_dl):
     return total_loss / num_batches
 
 
-# %% ../nbs/03_MultiModal.ipynb 39
-def cal_indivisual_loss():
-  text_loss = (calculate_text_loss(text_dl['train']) + calculate_text_loss(text_dl['valid'])) / 2
-  vision_loss = (calculate_vision_loss(vision_dl['train']) + calculate_vision_loss(vision_dl['valid'])) / 2
+# %% ../nbs/03_MultiModal.ipynb 38
+def total_loss(model):
+  text_loss = (calculate_text_loss(model, text_dl['train']) + calculate_text_loss(model, text_dl['valid'])) / 2
+  vision_loss = (calculate_vision_loss(model, vision_dl['train']) + calculate_vision_loss(model, vision_dl['valid'])) / 2
   print(f"Text Loss: {text_loss:.4f} | Vision Loss: {vision_loss:.4f}")
 
-# %% ../nbs/03_MultiModal.ipynb 42
-def multi_modal_train(model, epochs):
-    model = model.to(multiConfig.device)
-    optimizer = AdamW(model.parameters(), lr=multiConfig.lr)
-
-    for epoch in range(epochs):
-        model.train()
-        train_loss, no_train = 0, 0
-        train_iters.reset()
-
-        for text_input, text_target, ims in train_iters: # Iterate directly over iters
-            no_train += 1
-            # Handle None for images
-            if ims is not None:
-                ims = ims.to(multiConfig.device)
-
-            text_input, text_target = text_input.to(multiConfig.device), text_target.to(multiConfig.device)
-
-            optimizer.zero_grad()
-
-            with torch.autocast(device_type=multiConfig.device, dtype=multiConfig.dtype):
-              logits = pred(model, text_input, ims) #model(text_input, ims)
-
-              loss = cal_loss(logits, text_target)    #loss_func(logits.reshape(-1, gptConfig.vocab_size), text_target.reshape(-1))
-
-            loss.backward()
-
-            clip_grad_norm_(model.parameters(), gptConfig.max_grad_norm) # to clip gradients
-
-            optimizer.step()
-
-            train_loss += loss.item()
-
-        valid_iters.reset()
-        model.eval()
-        val_loss, no_valid = 0, 0
-        with torch.no_grad(), torch.autocast(device_type=gptConfig.device, dtype=gptConfig.dtype):
-            for text_input, text_target, ims in valid_iters:
-                no_valid += 1
-
-                if ims is not None: ims = ims.to(multiConfig.device)
-
-                text_input, text_target = text_input.to(multiConfig.device), text_target.to(multiConfig.device)
-
-                logits = pred(model, text_input, ims)
-
-                loss = cal_loss(logits, text_target)
-
-                val_loss += loss.item()
-
-        print(f"{epoch} -> {train_loss/no_train:.4f} : {val_loss/no_valid:.4f}")
-
-# %% ../nbs/03_MultiModal.ipynb 48
+# %% ../nbs/03_MultiModal.ipynb 44
 @torch.no_grad()
 def generate_caption(model, image, max_len=30):
     model.eval()
@@ -319,10 +267,10 @@ def generate_caption(model, image, max_len=30):
 
     return tokenizer.decode(generated)
 
-# %% ../nbs/03_MultiModal.ipynb 50
+# %% ../nbs/03_MultiModal.ipynb 46
 find_lbl = lambda lable: [key for key, values in captions.items() if lable in values]
 
-# %% ../nbs/03_MultiModal.ipynb 55
+# %% ../nbs/03_MultiModal.ipynb 51
 @torch.no_grad()
 def generate_text(model, prompt, max_new_tokens=100, temperature=1.0):
     """
