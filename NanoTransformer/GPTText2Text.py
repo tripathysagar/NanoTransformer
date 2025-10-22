@@ -86,7 +86,7 @@ class MultiHeadAttention(nn.Module):
 
         self.heads = nn.ModuleList([AttentionHead(config) for _ in range(config.n_heads)])
         self.dropout = nn.Dropout(p=config.dropout)
-        self.linear = nn.Linear(config.embedding_dim, config.embedding_dim)
+        self.linear_MHA = nn.Linear(config.embedding_dim, config.embedding_dim)
         self.layer_norm = nn.LayerNorm(config.embedding_dim)
 
     def forward(self, x): #bs * seq_len * embedding_dim
